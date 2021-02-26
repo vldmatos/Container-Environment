@@ -1,0 +1,64 @@
+version: '3.4'
+
+networks:
+  collectevents:
+
+services:
+      
+  mongo:
+    image: mongo
+    container_name: mongo
+    restart: always
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: AHSB93993
+    ports:
+      - 27017:27017
+    networks:
+      - collectevents
+
+
+
+  mongo-express:
+    image: mongo-express
+    container_name: mongo-manager
+    restart: always
+    ports:
+      - 8081:8081
+    environment:
+      ME_CONFIG_MONGODB_ADMINUSERNAME: root
+      ME_CONFIG_MONGODB_ADMINPASSWORD: AHSB93993
+    depends_on:
+      - mongo
+    networks:
+      - collectevents
+
+
+
+  prometheus:
+    image: prom/prometheus
+    container_name: prometheus
+    restart: always
+    ports:
+      - 9090:9090
+    volumes:
+      - ./.environment/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+    networks:
+      - collectevents      
+
+
+
+  grafana: 
+    image: grafana/grafana
+    container_name: grafana
+    depends_on: 
+      - prometheus
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=AHSB93993
+    restart: always
+    ports:
+      - 3000:3000
+    networks:
+      - collectevents
